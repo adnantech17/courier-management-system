@@ -43,7 +43,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     # User Defined Apps
-    'users'
+    'users',
+    'routing',
+    'parcel_management',
 ]
 
 MIDDLEWARE = [

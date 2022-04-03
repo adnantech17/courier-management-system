@@ -1,19 +1,22 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
+from routing.models import Branch
 
 from .managers import UserManager
 
 ROLE_CHOICES = [
-        ('admin', 'admin'),
-        ('office_staff', 'office_staff'),
-        ('delivery_man', 'delivery_man'),
-    ]
+    ('admin', 'admin'),
+    ('office_staff', 'office_staff'),
+    ('delivery_man', 'delivery_man'),
+]
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(unique=True, max_length=64)
     email = models.EmailField(unique=True)
-    assigned_branch = models.CharField(max_length=64, null=True, blank=True)
+    assigned_branch = models.ForeignKey(
+        Branch, on_delete=models.SET_NULL, related_name="assigned_branch", null=True)
     name = models.CharField(max_length=64, null=True, blank=True)
     role = models.CharField(max_length=25, choices=ROLE_CHOICES)
     is_staff = models.BooleanField(default=False)

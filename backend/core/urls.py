@@ -6,4 +6,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', obtain_auth_token),
     path('users/', include('users.urls')),
+    path('branches/', include('routing.urls')),
+    path('', include('parcel_management.urls')),
 ]

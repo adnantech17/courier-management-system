@@ -25,15 +25,6 @@ class UsersAPI(APIView):
             return Response({'msg': 'Data Created'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request, pk, format=None):
-        id = pk
-        stu = User.objects.get(pk=id)
-        serializer = UserSerializer(stu, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'msg': 'Complete Data Updated'})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def patch(self, request, pk, format=None):
         id = pk
         stu = User.objects.get(pk=id)
