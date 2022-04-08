@@ -1,14 +1,16 @@
-import { SettingDrawer } from '@ant-design/pro-layout';
+import { ConfigProvider, message } from 'antd';
 import { PageLoading } from '@ant-design/pro-layout';
-import { history, Link } from 'umi';
+import 'antd/dist/antd.css';
+import enUS from 'antd/lib/locale/en_US';
+import { history } from 'umi';
 import RightContent from '@/components/RightContent';
-import Footer from '@/components/Footer';
-import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
-import { BookOutlined, LinkOutlined } from '@ant-design/icons';
-import defaultSettings from '../config/defaultSettings';
-const isDev = process.env.NODE_ENV === 'development';
+import { getCurrentUser as queryCurrentUser } from './pages/user/Login/service';
+import { request } from '@/services/api/client';
+// import { onMessage } from "firebase/messaging";
+// import { messaging } from "@/services/firebase/firebaseInit";
 const loginPath = '/user/login';
-/** 获取用户信息比较慢的时候会展示一个 loading */
+
+const publicPaths = ['/user/login', '/user/forget-password'];
 
 export const initialStateConfig = {
   loading: <PageLoading />,
@@ -18,80 +20,63 @@ export const initialStateConfig = {
  * */
 
 export async function getInitialState() {
+  const token = localStorage.getItem('auth_token');
+  let currentUser;
+
+  const setTokenInRequestHeader = async (token) => {
+    request.interceptors.request.use((url, options) => {
+      if (token) {
+        options.headers['Authorization'] = `Token ${token}`;
+      } else {
+        delete options.headers['Authorization'];
+      }
+
+      return {
+        url: `${url}`,
+        options: { ...options, interceptors: true },
+      };
+    });
+  };
+
   const fetchUserInfo = async () => {
     try {
       const msg = await queryCurrentUser();
-      return msg.data;
+      if (msg.success) return msg.data;
+      else throw Error();
     } catch (error) {
+      localStorage.removeItem('auth_token');
+      setTokenInRequestHeader(null);
       history.push(loginPath);
     }
+  };
 
-    return undefined;
-  }; // 如果不是登录页面，执行
-
-  if (history.location.pathname !== loginPath) {
-    const currentUser = await fetchUserInfo();
-    return {
-      fetchUserInfo,
-      currentUser,
-      settings: defaultSettings,
-    };
+  if (token) {
+    setTokenInRequestHeader(token);
+    currentUser = await fetchUserInfo();
   }
 
   return {
     fetchUserInfo,
-    settings: defaultSettings,
+    setTokenInRequestHeader,
+    settings: {},
+    currentUser,
   };
-} // ProLayout 支持的api https://procomponents.ant.design/components/layout
+}
 
 export const layout = ({ initialState, setInitialState }) => {
   return {
+    logo: null,
     rightContentRender: () => <RightContent />,
     disableContentMargin: false,
-    waterMarkProps: {
-      content: initialState?.currentUser?.name,
-    },
-    footerRender: () => <Footer />,
     onPageChange: () => {
-      const { location } = history; // 如果没有登录，重定向到 login
+      const { location } = history;
 
       if (!initialState?.currentUser && location.pathname !== loginPath) {
         history.push(loginPath);
       }
     },
-    links: isDev
-      ? [
-          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
-            <LinkOutlined />
-            <span>OpenAPI 文档</span>
-          </Link>,
-          <Link to="/~docs" key="docs">
-            <BookOutlined />
-            <span>业务组件文档</span>
-          </Link>,
-        ]
-      : [],
-    menuHeaderRender: undefined,
-    // 自定义 403 页面
-    // unAccessible: <div>unAccessible</div>,
-    // 增加一个 loading 的状态
     childrenRender: (children, props) => {
-      // if (initialState?.loading) return <PageLoading />;
-      return (
-        <>
-          {children}
-          {!props.location?.pathname?.includes('/login') && (
-            <SettingDrawer
-              disableUrlParams
-              enableDarkTheme
-              settings={initialState?.settings}
-              onSettingChange={(settings) => {
-                setInitialState((preInitialState) => ({ ...preInitialState, settings }));
-              }}
-            />
-          )}
-        </>
-      );
+      return <ConfigProvider locale={enUS}>{children}</ConfigProvider>;
     },
     ...initialState?.settings,
   };

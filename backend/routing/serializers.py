@@ -12,7 +12,6 @@ class BranchSerializer(serializers.ModelSerializer):
 
 
 class BranchEdgeSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = BranchEdge
         fields = ['id', 'from_branch', 'to_branch',

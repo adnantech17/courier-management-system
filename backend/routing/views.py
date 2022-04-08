@@ -4,6 +4,7 @@ from .models import Branch, BranchEdge
 from .serializers import BranchSerializer, BranchEdgeSerializer
 from rest_framework import status
 from rest_framework.views import APIView
+from django.core.paginator import Paginator
 
 
 class BranchAPI(APIView):
@@ -14,9 +15,20 @@ class BranchAPI(APIView):
             serializer = BranchSerializer(stu)
             return Response(serializer.data)
 
-        stu = Branch.objects.all()
-        serializer = BranchSerializer(stu, many=True)
-        return Response(serializer.data)
+        all_data = Branch.objects.all()
+        pageSize = request.query_params.get("pageSize")
+        page = request.query_params.get('page')
+
+        if pageSize is None:
+            pageSize = 10
+
+        if page is None:
+            page = 1
+
+        paginator = Paginator(all_data, pageSize)
+        dataResponse = int(pageSize) > 0 and paginator.page(page) or all_data
+        serializer = BranchSerializer(dataResponse, many=True)
+        return Response({'data': serializer.data, 'success': True, 'page': page, 'pageSize': pageSize})
 
     def post(self, request, format=None):
         serializer = BranchSerializer(data=request.data)
@@ -49,9 +61,20 @@ class BranchEdgeAPI(APIView):
             serializer = BranchEdgeSerializer(stu)
             return Response(serializer.data)
 
-        stu = BranchEdge.objects.all()
-        serializer = BranchEdgeSerializer(stu, many=True)
-        return Response(serializer.data)
+        all_data = BranchEdge.objects.all()
+        pageSize = request.query_params.get("pageSize")
+        page = request.query_params.get('page')
+
+        if pageSize is None:
+            pageSize = 10
+
+        if page is None:
+            page = 1
+
+        paginator = Paginator(all_data, pageSize)
+        dataResponse = int(pageSize) > 0 and paginator.page(page) or all_data
+        serializer = BranchEdgeSerializer(dataResponse, many=True)
+        return Response({'data': serializer.data, 'success': True, 'page': page, 'pageSize': pageSize})
 
     def post(self, request, format=None):
         serializer = BranchEdgeSerializer(data=request.data)

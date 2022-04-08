@@ -1,5 +1,6 @@
 import time
 from django.shortcuts import render
+from django.core.paginator import Paginator
 from rest_framework.response import Response
 from .models import Parcel, Customer, Address
 from .serializers import ParcelSerializer, AddressSerializer, CustomerSerializer
@@ -11,47 +12,28 @@ class ParcelAPI(APIView):
     def get(self, request, pk=None, format=None):
         id = pk
         if id is not None:
-            stu = Parcel.objects.get(id=id)
-            serializer = ParcelSerializer(stu)
+            all_data = Parcel.objects.get(id=id)
+            serializer = ParcelSerializer(all_data)
             return Response(serializer.data)
 
-        stu = Parcel.objects.all()
-        serializer = ParcelSerializer(stu, many=True)
-        return Response(serializer.data)
+        all_data = Parcel.objects.all()
+        pageSize = request.query_params.get("pageSize")
+        page = request.query_params.get('page')
+
+        if pageSize is None:
+            pageSize = 10
+
+        if page is None:
+            page = 1
+
+        paginator = Paginator(all_data, pageSize)
+        dataResponse = int(pageSize) > 0 and paginator.page(page) or all_data
+        serializer = ParcelSerializer(dataResponse, many=True)
+        return Response({'data': serializer.data, 'success': True, 'page': page, 'pageSize': pageSize})
 
     def post(self, request, format=None):
-        sender = request.data["sender"]
-        receiver = request.data["receiver"]
-        source_address = request.data["source_address"]
-        destination_address = request.data["destination_address"]
-
-        serializer = AddressSerializer(data=source_address)
-        if serializer.is_valid():
-            request.data["source_address"] = serializer.save().id
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = AddressSerializer(data=destination_address)
-        if serializer.is_valid():
-            request.data["destination_address"] = serializer.save().id
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = CustomerSerializer(data=sender)
-        if serializer.is_valid():
-            request.data["sender"] = serializer.save().id
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = CustomerSerializer(data=receiver)
-        if serializer.is_valid():
-            request.data["receiver"] = serializer.save().id
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         request.data['tracking_id'] = int(round(time.time() * 1000))
-
-        print(request.data)
         serializer = ParcelSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -60,8 +42,8 @@ class ParcelAPI(APIView):
 
     def patch(self, request, pk, format=None):
         id = pk
-        stu = Parcel.objects.get(pk=id)
-        serializer = ParcelSerializer(stu, data=request.data, partial=True)
+        data = Parcel.objects.get(pk=id)
+        serializer = ParcelSerializer(data, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({'msg': 'Partial Data Updated'})
@@ -69,6 +51,6 @@ class ParcelAPI(APIView):
 
     def delete(self, request, pk, format=None):
         id = pk
-        stu = Parcel.objects.get(pk=id)
-        stu.delete()
+        data = Parcel.objects.get(pk=id)
+        data.delete()
         return Response({'msg': 'Data Deleted'})

@@ -4,6 +4,20 @@ from .models import User
 from .serializers import UserSerializer
 from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
+from rest_framework import permissions
+from rest_framework.authentication import TokenAuthentication
+
+
+class CurrentUserAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = [TokenAuthentication, ]
+
+    def get(self, request, pk=None, format=None):
+        print(request.user)
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response({'data': serializer.data, 'success': True})
 
 
 class UsersAPI(APIView):

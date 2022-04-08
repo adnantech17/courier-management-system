@@ -1,19 +1,11 @@
-import {
-  AlipayCircleOutlined,
-  LockOutlined,
-  MobileOutlined,
-  TaobaoCircleOutlined,
-  UserOutlined,
-  WeiboCircleOutlined,
-} from '@ant-design/icons';
-import { Alert, message, Tabs } from 'antd';
-import React, { useState } from 'react';
-import { ProFormCaptcha, ProFormCheckbox, ProFormText, LoginForm } from '@ant-design/pro-form';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { Alert, Button, message, Form } from 'antd';
+import { useState } from 'react';
+import { ProFormCheckbox, ProFormText, LoginForm } from '@ant-design/pro-form';
 import { history, useModel } from 'umi';
-import Footer from '@/components/Footer';
-import { login } from '@/services/ant-design-pro/api';
-import { getFakeCaptcha } from '@/services/ant-design-pro/login';
+import { login } from './service';
 import styles from './index.less';
+import { setItem } from '@/services/storage/localStorage';
 
 const LoginMessage = ({ content }) => (
   <Alert
@@ -28,6 +20,7 @@ const LoginMessage = ({ content }) => (
 
 const Login = () => {
   const [userLoginState, setUserLoginState] = useState({});
+  const [forgetPass, setForgetPass] = useState(false);
   const [type, setType] = useState('account');
   const { initialState, setInitialState } = useModel('@@initialState');
 
@@ -41,59 +34,67 @@ const Login = () => {
 
   const handleSubmit = async (values) => {
     try {
-      // 登录
-      const msg = await login({ ...values, type });
+      const resp = await login({ ...values, type });
 
-      if (msg.status === 'ok') {
-        const defaultLoginSuccessMessage = 'Login successful!';
+      if (resp.token) {
+        const defaultLoginSuccessMessage = 'Login Success';
         message.success(defaultLoginSuccessMessage);
+        setItem('auth_token', resp.token);
+        console.log(resp);
+
+        await initialState.setTokenInRequestHeader(resp.token);
+        await setInitialState((s) => ({
+          ...s,
+          request: resp.token,
+        }));
         await fetchUserInfo();
-        /** 此方法会跳转到 redirect 参数所在的位置 */
 
         if (!history) return;
         const { query } = history.location;
         const { redirect } = query;
         history.push(redirect || '/');
         return;
-      }
-
-      console.log(msg); // 如果失败去设置用户错误信息
-
-      setUserLoginState(msg);
+      } else throw resp;
     } catch (error) {
-      const defaultLoginFailureMessage = 'Login failed, please try again!';
-      message.error(defaultLoginFailureMessage);
+      setUserLoginState(error);
+      message.error(error.details);
     }
   };
-
+  const tailLayout = {
+    wrapperCol: {
+      span: 24,
+    },
+  };
   const { status, type: loginType } = userLoginState;
   return (
     <div className={styles.container}>
       <div className={styles.content}>
+        <div className="text-center mt-4">
+          <img width={150} alt="logo" src="/logo.png" />
+        </div>
         <LoginForm
-          logo={<img alt="logo" src="/logo.svg" />}
-          title="Ant Design"
-          subTitle={'Ant Design is the most influential web design specification in Xihu district'}
           initialValues={{
             autoLogin: true,
           }}
-          actions={[
-            'Login with :',
-            <AlipayCircleOutlined key="AlipayCircleOutlined" className={styles.icon} />,
-            <TaobaoCircleOutlined key="TaobaoCircleOutlined" className={styles.icon} />,
-            <WeiboCircleOutlined key="WeiboCircleOutlined" className={styles.icon} />,
-          ]}
+          actions={[]}
           onFinish={async (values) => {
             await handleSubmit(values);
           }}
+          submitter={{
+            render: (props) => (
+              <Button
+                size="large"
+                className="w-100"
+                type="primary"
+                onClick={() => props.form?.submit()}
+              >
+                Login
+              </Button>
+            ),
+          }}
         >
-          <Tabs activeKey={type} onChange={setType}>
-            <Tabs.TabPane key="account" tab={'Account Login'} />
-            <Tabs.TabPane key="mobile" tab={'Phone Login'} />
-          </Tabs>
-
           {status === 'error' && loginType === 'account' && (
-            <LoginMessage content={'Incorrect username/password(admin/ant.design)'} />
+            <LoginMessage content="Incorrect username/password" />
           )}
           {type === 'account' && (
             <>
@@ -103,7 +104,7 @@ const Login = () => {
                   size: 'large',
                   prefix: <UserOutlined className={styles.prefixIcon} />,
                 }}
-                placeholder={'Username: admin or user'}
+                placeholder="Enter Username"
                 rules={[
                   {
                     required: true,
@@ -117,7 +118,7 @@ const Login = () => {
                   size: 'large',
                   prefix: <LockOutlined className={styles.prefixIcon} />,
                 }}
-                placeholder={'Password: ant.design'}
+                placeholder="Enter Passworld"
                 rules={[
                   {
                     required: true,
@@ -128,64 +129,6 @@ const Login = () => {
             </>
           )}
 
-          {status === 'error' && loginType === 'mobile' && <LoginMessage content="验证码错误" />}
-          {type === 'mobile' && (
-            <>
-              <ProFormText
-                fieldProps={{
-                  size: 'large',
-                  prefix: <MobileOutlined className={styles.prefixIcon} />,
-                }}
-                name="mobile"
-                placeholder={'Phone Number'}
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input your phone number!',
-                  },
-                  {
-                    pattern: /^1\d{10}$/,
-                    message: 'Phone number is invalid!',
-                  },
-                ]}
-              />
-              <ProFormCaptcha
-                fieldProps={{
-                  size: 'large',
-                  prefix: <LockOutlined className={styles.prefixIcon} />,
-                }}
-                captchaProps={{
-                  size: 'large',
-                }}
-                placeholder={'Verification Code'}
-                captchaTextRender={(timing, count) => {
-                  if (timing) {
-                    return `${count} ${'sec(s)'}`;
-                  }
-
-                  return 'Get Code';
-                }}
-                name="captcha"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input verification code!',
-                  },
-                ]}
-                onGetCaptcha={async (phone) => {
-                  const result = await getFakeCaptcha({
-                    phone,
-                  });
-
-                  if (result === false) {
-                    return;
-                  }
-
-                  message.success('获取验证码成功！验证码为：1234');
-                }}
-              />
-            </>
-          )}
           <div
             style={{
               marginBottom: 24,
@@ -198,13 +141,58 @@ const Login = () => {
               style={{
                 float: 'right',
               }}
+              onClick={() => {
+                setForgetPass(!forgetPass);
+              }}
             >
-              Forgot Password ?
+              Forgot Password
             </a>
           </div>
         </LoginForm>
       </div>
-      <Footer />
+      {forgetPass && (
+        <Form
+          style={{
+            margin: 'auto',
+            maxWidth: 330,
+          }}
+          name="basic"
+          layout="vertical"
+          initialValues={{
+            public: '1',
+          }}
+          onFinish={{}}
+        >
+          <ProFormText
+            name="resetUsername"
+            fieldProps={{
+              size: 'large',
+              prefix: <UserOutlined className={styles.prefixIcon} />,
+            }}
+            placeholder="Enter Username"
+            rules={[
+              {
+                required: true,
+                message: 'Please input your username!',
+              },
+            ]}
+          />
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              onClick={() => {
+                history.push('/user/forget-password');
+              }}
+            >
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
+      )}
+
+      {/* <Footer /> */}
     </div>
   );
 };
