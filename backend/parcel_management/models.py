@@ -1,5 +1,6 @@
 from django.db import models
 from routing.models import Branch
+from django.utils import timezone
 
 
 class Customer(models.Model):
@@ -15,6 +16,8 @@ class Address(models.Model):
 class Parcel(models.Model):
     name = models.CharField(max_length=64)
     tracking_id = models.IntegerField()
+    current_branch = models.ForeignKey(
+        Branch, on_delete=models.CASCADE, related_name='current_branch')
     source_address = models.ForeignKey(
         Address, on_delete=models.CASCADE, related_name='source_address')
     destination_address = models.ForeignKey(
@@ -32,3 +35,11 @@ class Parcel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class PathHistory(models.Model):
+    parcel = models.ForeignKey(
+        Parcel, on_delete=models.CASCADE, related_name='parcel')
+    branch = models.ForeignKey(
+        Branch, on_delete=models.CASCADE, related_name='branch')
+    timestamp = models.DateTimeField(default=timezone.now)

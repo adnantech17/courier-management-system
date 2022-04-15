@@ -14,7 +14,6 @@ class CurrentUserAPI(APIView):
     authentication_classes = [TokenAuthentication, ]
 
     def get(self, request, pk=None, format=None):
-        print(request.user)
         user = request.user
         serializer = UserSerializer(user)
         return Response({'data': serializer.data, 'success': True})
@@ -24,32 +23,32 @@ class UsersAPI(APIView):
     def get(self, request, pk=None, format=None):
         id = pk
         if id is not None:
-            stu = User.objects.get(id=id)
-            serializer = UserSerializer(stu)
+            user = User.objects.get(id=id)
+            serializer = UserSerializer(user)
             return Response(serializer.data)
 
-        stu = User.objects.all()
-        serializer = UserSerializer(stu, many=True)
-        return Response(serializer.data)
+        user = User.objects.all()
+        serializer = UserSerializer(user, many=True)
+        return Response({'data': serializer.data, 'success': True})
 
     def post(self, request, format=None):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'msg': 'Data Created'}, status=status.HTTP_201_CREATED)
+            return Response({'data': {'msg': 'Data Created'}, 'success': True}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk, format=None):
         id = pk
-        stu = User.objects.get(pk=id)
-        serializer = UserSerializer(stu, data=request.data, partial=True)
+        user = User.objects.get(pk=id)
+        serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({'msg': 'Partial Data Updated'})
+            return Response({'data': {'msg': 'Data Updated'}, 'success': True})
         return Response(serializer.errors)
 
     def delete(self, request, pk, format=None):
         id = pk
-        stu = User.objects.get(pk=id)
-        stu.delete()
+        user = User.objects.get(pk=id)
+        user.delete()
         return Response({'msg': 'Data Deleted'})

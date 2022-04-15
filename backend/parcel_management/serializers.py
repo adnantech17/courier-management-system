@@ -1,12 +1,20 @@
 from rest_framework import serializers
 
-from .models import Parcel, Customer, Address
+from .models import Parcel, Customer, Address, PathHistory
+from routing.serializers import BranchSerializer
 
 
 class CustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Customer
+        fields = '__all__'
+
+
+class PathHistorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PathHistory
         fields = '__all__'
 
 
@@ -40,8 +48,17 @@ class ParcelSerializer(serializers.ModelSerializer):
         return parcel
 
     def update(self, instance, validated_data):
+        print(instance)
         instance.current_tracking_status = validated_data.get(
             'current_tracking_status', instance.current_tracking_status)
+        instance.current_branch = validated_data.get(
+            'current_branch', instance.current_branch)
+        if validated_data.get('parcel_on_return'):
+            temp = instance.destination_address
+            print(temp)
+            instance.destination_address = instance.source_address
+            instance.source_address = temp
+            print(instance)
         instance.parcel_on_return = validated_data.get(
             'parcel_on_return', instance.parcel_on_return)
         instance.save()
@@ -52,3 +69,11 @@ class ParcelSerializer(serializers.ModelSerializer):
         model = Parcel
         fields = '__all__'
         read_only_fields = ['id']
+
+
+class TrackSerializer(serializers.ModelSerializer):
+    branch = BranchSerializer(read_only=True)
+
+    class Meta:
+        model = PathHistory
+        fields = '__all__'

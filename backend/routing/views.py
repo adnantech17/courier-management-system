@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
+
+from parcel_management.graph import Graph
 from .models import Branch, BranchEdge
 from .serializers import BranchSerializer, BranchEdgeSerializer
 from rest_framework import status
@@ -34,7 +36,7 @@ class BranchAPI(APIView):
         serializer = BranchSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'msg': 'Data Created'}, status=status.HTTP_201_CREATED)
+            return Response({'data': {'msg': 'Data Created'}, 'success': True}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk, format=None):
@@ -43,7 +45,7 @@ class BranchAPI(APIView):
         serializer = BranchSerializer(stu, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({'msg': 'Partial Data Updated'})
+            return Response({'data': {'msg': 'Data Updated'}, 'success': True})
         return Response(serializer.errors)
 
     def delete(self, request, pk, format=None):
@@ -62,6 +64,8 @@ class BranchEdgeAPI(APIView):
             return Response(serializer.data)
 
         all_data = BranchEdge.objects.all()
+        graph = Graph(all_data, 1, 3)
+        print(graph.shortest_path())
         pageSize = request.query_params.get("pageSize")
         page = request.query_params.get('page')
 
@@ -80,7 +84,7 @@ class BranchEdgeAPI(APIView):
         serializer = BranchEdgeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'msg': 'Data Created'}, status=status.HTTP_201_CREATED)
+            return Response({'data': {'msg': 'Data Created'}, 'success': True}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk, format=None):
@@ -89,7 +93,7 @@ class BranchEdgeAPI(APIView):
         serializer = BranchEdgeSerializer(stu, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({'msg': 'Partial Data Updated'})
+            return Response({'data': {'msg': 'Data Updated'}, 'success': True})
         return Response(serializer.errors)
 
     def delete(self, request, pk, format=None):
