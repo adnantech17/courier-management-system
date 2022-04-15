@@ -11,6 +11,13 @@ export default [
             path: '/user/login',
             component: './user/Login',
           },
+
+          {
+            path: '/user/tracking',
+            component: './TrackParcel',
+            name: 'Parcel Tracking',
+            icon: 'FolderOpenOutlined',
+          },
         ],
       },
       {
@@ -43,10 +50,54 @@ export default [
     ],
   },
   {
-    name: 'list.table-list',
+    name: 'User Management',
+    icon: 'user',
+    path: '/users',
+    component: './UserManagement',
+  },
+  {
+    name: 'Branch Management',
+    icon: 'BankOutlined',
+    path: '/branch',
+    routes: [
+      {
+        path: '/branch/branches',
+        component: './BranchManagement',
+        name: 'Branch Management',
+        icon: 'BankOutlined',
+      },
+      {
+        path: '/branch/routing',
+        component: './Routing',
+        name: 'Routing',
+        icon: 'LinkOutlined',
+      },
+    ],
+  },
+  {
+    path: '/parcel',
     icon: 'table',
-    path: '/list',
-    component: './TableList',
+    name: 'Parcel Management',
+    routes: [
+      {
+        path: '/parcel/parcel-management',
+        component: './ParcelManagement',
+        name: 'Parcel Management',
+        icon: 'FolderOpenOutlined',
+      },
+      {
+        path: '/parcel/receive',
+        component: './ReceiveParcel',
+        name: 'Parcel Receive',
+        icon: 'FolderOpenOutlined',
+      },
+      {
+        path: '/parcel/route',
+        component: './RouteParcel',
+        name: 'Parcel Route',
+        icon: 'FolderOpenOutlined',
+      },
+    ],
   },
   {
     path: '/',

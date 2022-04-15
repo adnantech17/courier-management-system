@@ -81,16 +81,20 @@ const Login = () => {
             await handleSubmit(values);
           }}
           submitter={{
-            render: (props) => (
-              <Button
-                size="large"
-                className="w-100"
-                type="primary"
-                onClick={() => props.form?.submit()}
-              >
+            render: (props) => [
+              <Button type="primary" key="login" onClick={() => props.form?.submit()}>
                 Login
-              </Button>
-            ),
+              </Button>,
+              <Button
+                type="primary"
+                key="track"
+                onClick={() => {
+                  history.push('/user/tracking');
+                }}
+              >
+                Track
+              </Button>,
+            ],
           }}
         >
           {status === 'error' && loginType === 'account' && (
