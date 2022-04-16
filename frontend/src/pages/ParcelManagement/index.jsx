@@ -54,6 +54,11 @@ const TableList = () => {
 
   const columns = [
     {
+      title: 'Tracking ID',
+      search: false,
+      dataIndex: 'tracking_id',
+    },
+    {
       title: 'Name',
       search: false,
       dataIndex: 'name',
@@ -101,6 +106,7 @@ const TableList = () => {
               type="primary"
               onClick={() => {
                 handleUpdate(record.id, true);
+                handleSuccess()
               }}
             >
               Success
@@ -110,7 +116,8 @@ const TableList = () => {
               type="danger"
               style={{ marginLeft: 16 }}
               onClick={() => {
-                handleUpdate(record.id, false);
+                handleUpdate(record.id, false);                
+                handleSuccess()
               }}
             >
               Failed
@@ -127,7 +134,7 @@ const TableList = () => {
   };
 
   const drawerColumns = columns.filter(
-    (c) => currentUser?.role != 'delivery_man' && c.title !== 'Delivery',
+    (c) => ((currentUser?.role == 'delivery_man' && c.title == 'Delivery') || (c.title != 'Delivery'))
   );
 
   return (

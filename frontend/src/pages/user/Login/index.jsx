@@ -85,15 +85,18 @@ const Login = () => {
               <Button type="primary" key="login" onClick={() => props.form?.submit()}>
                 Login
               </Button>,
+              <a
+              href="/user/tracking">
               <Button
                 type="primary"
                 key="track"
-                onClick={() => {
-                  history.push('/user/tracking');
-                }}
+                // onClick={() => {
+                //   history.push('/user/tracking');
+                // }}
               >
                 Track
-              </Button>,
+              </Button>
+              </a>,
             ],
           }}
         >

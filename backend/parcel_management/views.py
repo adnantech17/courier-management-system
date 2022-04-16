@@ -24,13 +24,17 @@ class CheckReceiveAPI(APIView):
         except:
             return Response({'data': {'msg': 'Parcel not found'}, 'success': False}, status=status.HTTP_404_NOT_FOUND)
         else:
-            if data.current_tracking_status != 'shipping':
+            if request.user.role != 'office_staff' or data.current_tracking_status != 'shipping':
                 return Response({'data': {'msg': 'Invalid parcel entry'}, 'success': False}, status=status.HTTP_400_BAD_REQUEST)
             serializer = ParcelSerializer(data)
         return Response({'data': serializer.data, 'success': True})
 
     def post(self, request, format=None):
         arr = request.data['serials'].split(',')
+        
+        if request.user.role != 'office_staff':
+            return Response({'data': {'msg': "You don't have the permission"}, 'success': False})
+
         for id in arr:
             try:
                 parcel = Parcel.objects.get(id=int(id))
@@ -64,7 +68,7 @@ class CheckRouteAPI(APIView):
             return Response({'data': {'msg': 'Parcel not found'}, 'success': False}, status=status.HTTP_404_NOT_FOUND)
         else:
             print(data.current_branch, request.user.assigned_branch)
-            if data.current_tracking_status == 'shipping' or data.current_branch == request.user.assigned_branch or data.current_branch != request.user.assigned_branch:
+            if request.user.role != 'office_staff' or data.current_tracking_status == 'shipping' or (data.current_branch == request.user.assigned_branch and data.current_branch == data.destination_address.branch) or data.current_branch != request.user.assigned_branch:
                 return Response({'data': {'msg': 'Invalid parcel entry'}, 'success': False}, status=status.HTTP_400_BAD_REQUEST)
             serializer = ParcelSerializer(data)
 
@@ -88,6 +92,10 @@ class CheckRouteAPI(APIView):
 
     def post(self, request, format=None):
         arr = request.data['serials'].split(',')
+        
+        if request.user.role != 'office_staff':
+            return Response({'data': {'msg': "You don't have the permission"}, 'success': False})
+
         for id in arr:
             try:
                 parcel = Parcel.objects.get(id=int(id))
@@ -170,7 +178,7 @@ class ParcelAPI(APIView):
             'current_tracking_status')
 
         if request.data.get('parcel_on_return') == True or request.data.get('current_tracking_status') == 'delivered':
-            if request.user.assigned_branch == data.destination_address.branch:
+            if request.user.assigned_branch == data.destination_address.branch and request.user.role == 'delivery_man':
                 new_data['parcel_on_return'] = request.data['parcel_on_return']
             else:
                 return Response({'data': {'msg': "You don't have the permission"}, 'success': False})
