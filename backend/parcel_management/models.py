@@ -43,3 +43,4 @@ class PathHistory(models.Model):
     branch = models.ForeignKey(
         Branch, on_delete=models.CASCADE, related_name='branch')
     timestamp = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=20, default="Received at")

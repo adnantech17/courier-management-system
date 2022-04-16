@@ -31,7 +31,7 @@ class CheckReceiveAPI(APIView):
 
     def post(self, request, format=None):
         arr = request.data['serials'].split(',')
-        
+
         if request.user.role != 'office_staff':
             return Response({'data': {'msg': "You don't have the permission"}, 'success': False})
 
@@ -47,8 +47,12 @@ class CheckReceiveAPI(APIView):
                 if serializer.is_valid():
                     serializer.save()
 
+                history_status = "Arrived at" if new_status == "arrived" else "Received at"
+
                 serializer = PathHistorySerializer(
-                    data={'parcel': parcel.id, 'branch': branch.id})
+                    data={'parcel': parcel.id, 'branch': branch.id,
+                          'status': history_status}
+                )
                 if serializer.is_valid():
                     serializer.save()
 
@@ -92,16 +96,22 @@ class CheckRouteAPI(APIView):
 
     def post(self, request, format=None):
         arr = request.data['serials'].split(',')
-        
+
         if request.user.role != 'office_staff':
             return Response({'data': {'msg': "You don't have the permission"}, 'success': False})
 
         for id in arr:
             try:
                 parcel = Parcel.objects.get(id=int(id))
+                branch = request.user.assigned_branch
 
                 serializer = ParcelSerializer(
                     parcel, data={'current_tracking_status': 'shipping'}, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+
+                serializer = PathHistorySerializer(
+                    data={'parcel': parcel.id, 'branch': branch.id, 'status': "Shipped From"})
                 if serializer.is_valid():
                     serializer.save()
 
@@ -167,7 +177,13 @@ class ParcelAPI(APIView):
                 return Response({'data': {'msg': 'Unable to find any path between source and destination'}, 'success': False}, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
 
+            histSerializer = PathHistorySerializer(
+                data={'parcel': serializer.data['id'], 'branch': request.data['source_address']['branch'], 'status': "Created at"})
+            if histSerializer.is_valid():
+                histSerializer.save()
+
             return Response({'data': {'msg': 'Data Created', 'tracking_id': request.data['tracking_id'], 'cost': cost}, 'success': True}, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk, format=None):
@@ -187,6 +203,19 @@ class ParcelAPI(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({'data': {'msg': 'Partial Data Updated'}, 'success': True})
+
+        if request.data.get('current_tracking_status') == 'delivered':
+            serializer = PathHistorySerializer(
+                data={'parcel': id, 'branch': request.data.assigned_branch.id, 'status': "Delivered to"})
+            if serializer.is_valid():
+                serializer.save()
+
+        elif request.data.get('parcel_on_return') == True:
+            serializer = PathHistorySerializer(
+                data={'parcel': id, 'branch': request.data.assigned_branch.id, 'status': "Failed Delivery at"})
+            if serializer.is_valid():
+                serializer.save()
+
         return Response({'data': serializer.errors, 'success': False})
 
     def delete(self, request, pk, format=None):

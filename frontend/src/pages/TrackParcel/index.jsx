@@ -158,7 +158,7 @@ const EntryForm = () => {
         {tracking.map((data) => (
           <Step
             key={data.status}
-            title={data.branch.name}
+            title={`${data.status} ${data.branch.name}`}
             description={formatDate(data.timestamp)}
           />
         ))}
