@@ -1,14 +1,16 @@
 from rest_framework import serializers
+from routing.serializers import BranchSerializer
 
 from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    branch = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'name',
-                  'assigned_branch', 'role', 'password']
+                  'assigned_branch', 'role', 'password', 'branch']
 
     # def validate(self, attr):
     #     validate_password(attr['password'])
@@ -27,3 +29,6 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+    def get_branch(self, obj):
+        return BranchSerializer(obj.assigned_branch).data

@@ -50,6 +50,7 @@ export default [
     ],
   },
   {
+    access: 'canAdmin',
     name: 'User Management',
     icon: 'user',
     path: '/users',
@@ -58,6 +59,7 @@ export default [
   {
     name: 'Branch Management',
     icon: 'BankOutlined',
+    access: 'canAdmin',
     path: '/branch',
     routes: [
       {
@@ -90,12 +92,14 @@ export default [
         component: './ReceiveParcel',
         name: 'Parcel Receive',
         icon: 'FolderOpenOutlined',
+        access: 'canOfficeStaff',
       },
       {
         path: '/parcel/route',
         component: './RouteParcel',
         name: 'Parcel Route',
         icon: 'FolderOpenOutlined',
+        access: 'canOfficeStaff',
       },
     ],
   },

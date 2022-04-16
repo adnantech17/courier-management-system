@@ -19,6 +19,10 @@ export async function updateBranch(data) {
   });
 }
 
+export async function deleteBranch(id) {
+  return request.delete(`${ENDPOINTS.BRANCH}${id}/`);
+}
+
 export async function getSingleUser(params, id) {
   return request.get(`${ENDPOINTS.USER}/${id}`, {
     params: params,

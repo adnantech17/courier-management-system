@@ -63,7 +63,8 @@ class CheckRouteAPI(APIView):
         except:
             return Response({'data': {'msg': 'Parcel not found'}, 'success': False}, status=status.HTTP_404_NOT_FOUND)
         else:
-            if (data.current_tracking_status == 'shipping' and data.parcel_on_return == False) or data.current_branch != request.user.assigned_branch:
+            print(data.current_branch, request.user.assigned_branch)
+            if data.current_tracking_status == 'shipping' or data.current_branch == request.user.assigned_branch or data.current_branch != request.user.assigned_branch:
                 return Response({'data': {'msg': 'Invalid parcel entry'}, 'success': False}, status=status.HTTP_400_BAD_REQUEST)
             serializer = ParcelSerializer(data)
 

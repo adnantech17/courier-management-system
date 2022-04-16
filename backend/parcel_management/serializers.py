@@ -31,6 +31,9 @@ class ParcelSerializer(serializers.ModelSerializer):
     source_address = AddressSerializer(read_only=False)
     destination_address = AddressSerializer(read_only=False)
 
+    source_branch = serializers.SerializerMethodField(read_only=True)
+    destination_branch = serializers.SerializerMethodField(read_only=True)
+
     def create(self, validated_data):
         sender_data = validated_data.pop('sender')
         receiver_data = validated_data.pop('receiver')
@@ -69,6 +72,12 @@ class ParcelSerializer(serializers.ModelSerializer):
         model = Parcel
         fields = '__all__'
         read_only_fields = ['id']
+
+    def get_source_branch(self, obj):
+        return BranchSerializer(obj.source_address.branch).data
+
+    def get_destination_branch(self, obj):
+        return BranchSerializer(obj.destination_address.branch).data
 
 
 class TrackSerializer(serializers.ModelSerializer):

@@ -6,8 +6,11 @@ import ProTable from '@ant-design/pro-table';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import { getParcels, updateParcel } from './service';
 import Form from './components/Form';
+import { useModel } from 'umi';
 
 const TableList = () => {
+  const { initialState } = useModel('@@initialState');
+  const { currentUser } = initialState || {};
   const [showForm, setShowForm] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
 
@@ -43,8 +46,6 @@ const TableList = () => {
       }
       const resp = await updateParcel(data);
       if (!resp.success) throw resp;
-      // setModalData(resp.data);
-      // console.log(modalData, resp.data);
       message.success(`Receive successful`);
     } catch (error) {
       if (error.message) message.error(error.message);
@@ -70,6 +71,18 @@ const TableList = () => {
       render: (data, _) => <p>{data.name}</p>,
     },
     {
+      title: 'Source Branch',
+      search: false,
+      dataIndex: 'source_branch',
+      render: (data, _) => <p>{data.name}</p>,
+    },
+    {
+      title: 'Destination Branch',
+      search: false,
+      dataIndex: 'destination_branch',
+      render: (data, _) => <p>{data.name}</p>,
+    },
+    {
       title: 'Status',
       search: false,
       dataIndex: 'current_tracking_status',
@@ -81,7 +94,7 @@ const TableList = () => {
       render: (_, record) =>
         record.current_tracking_status == 'delivered' ? (
           'Delivered'
-        ) : (
+        ) : record.current_tracking_status == 'arrived' ? (
           <>
             <Button
               key="success"
@@ -103,15 +116,19 @@ const TableList = () => {
               Failed
             </Button>
           </>
+        ) : (
+          '-'
         ),
     },
   ];
 
   const handleSuccess = async () => {
-    // actionRef.current?.reload();
+    actionRef.current?.reload();
   };
 
-  const drawerColumns = columns.filter((c) => c.title !== 'Actions');
+  const drawerColumns = columns.filter(
+    (c) => currentUser?.role != 'delivery_man' && c.title !== 'Delivery',
+  );
 
   return (
     <>
@@ -145,7 +162,7 @@ const TableList = () => {
           </Button>,
         ]}
         request={getParcels}
-        columns={columns}
+        columns={drawerColumns}
         pagination={{
           pageSize: 10,
         }}
