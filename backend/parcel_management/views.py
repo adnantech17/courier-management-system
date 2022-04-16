@@ -146,15 +146,18 @@ class ParcelAPI(APIView):
     def post(self, request, format=None):
 
         request.data['tracking_id'] = int(round(time.time() * 1000))
-        request.data['current_branch'] = request.user.assigned_branch.id
+        request.data['current_branch'] = request.data['source_address']['branch']
+
+        all_data = BranchEdge.objects.all()
+        graph = Graph(all_data,
+                      request.data['source_address']['branch'], request.data['destination_address']['branch'])
+        _, cost = graph.shortest_path()
+
         serializer = ParcelSerializer(data=request.data)
         if serializer.is_valid():
+            if cost == -1:
+                return Response({'data': {'msg': 'Unable to find any path between source and destination'}, 'success': False}, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
-
-            all_data = BranchEdge.objects.all()
-            graph = Graph(all_data,
-                          serializer.data['source_address']['branch'], serializer.data['destination_address']['branch'])
-            _, cost = graph.shortest_path()
 
             return Response({'data': {'msg': 'Data Created', 'tracking_id': request.data['tracking_id'], 'cost': cost}, 'success': True}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

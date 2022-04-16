@@ -60,5 +60,10 @@ class Graph:
             path.appendleft(current_node)
             current_node = previous_node[current_node]
         path.appendleft(self.end_node)
+        if distance_from_start[self.end_node] == INFINITY:
+            cost = -1
+        else:
+            cost = distance_from_start[self.end_node] + \
+                self.initial_processing_cost
 
-        return path, distance_from_start[self.end_node] + self.initial_processing_cost
+        return path, cost

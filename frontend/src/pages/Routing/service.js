@@ -28,3 +28,7 @@ export async function getBranchesForDropdown(params) {
     throw error;
   }
 }
+
+export async function deleteBranchLink(id) {
+  return request.delete(`${ENDPOINTS.BRANCH_EDGE}${id}/`);
+}

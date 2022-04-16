@@ -1,10 +1,10 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Drawer } from 'antd';
+import { Button, Drawer, message, Popconfirm } from 'antd';
 import { useState, useRef } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import ProDescriptions from '@ant-design/pro-descriptions';
-import { getBranchEdges } from './service';
+import { deleteBranchLink, getBranchEdges } from './service';
 import Form from './components/Form';
 
 const TableList = () => {
@@ -13,6 +13,17 @@ const TableList = () => {
 
   const actionRef = useRef();
   const [currentRow, setCurrentRow] = useState();
+
+  const handleDelete = async (id) => {
+    try {
+      const resp = await deleteBranchLink(id);
+      if (!resp.success) throw resp;
+      message.success(`Deleted successful`);
+    } catch (error) {
+      console.log(error);
+      if (error.message) message.error('Invalid Request');
+    }
+  };
 
   const columns = [
     {
@@ -39,22 +50,26 @@ const TableList = () => {
       dataIndex: 'shipping_cost',
       render: (data, _) => <p>&#2547;{data}</p>,
     },
-    // {
-    //   title: 'Actions',
-    //   dataIndex: 'option',
-    //   valueType: 'option',
-    //   render: (_, record) => [
-    //     <a
-    //       key="config"
-    //       onClick={() => {
-    //         setCurrentRow(record);
-    //         setShowForm(true);
-    //       }}
-    //     >
-    //       Edit
-    //     </a>,
-    //   ],
-    // },
+    {
+      title: 'Actions',
+      dataIndex: 'option',
+      valueType: 'option',
+      render: (_, record) => [
+        <Popconfirm
+          key="delete"
+          placement="topLeft"
+          title={'Are you sure you wanna delete this branch?'}
+          onConfirm={() => {
+            handleDelete(record.id);
+            handleSuccess();
+          }}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button type="danger">Delete</Button>
+        </Popconfirm>,
+      ],
+    },
   ];
 
   const handleSuccess = async () => {
