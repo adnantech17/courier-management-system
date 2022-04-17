@@ -1,8 +1,6 @@
-from urllib import response
 from django.test import TestCase, Client
 from django.urls import reverse
 from users.views import *
-from routing.models import Branch
 from rest_framework import status
 import json
 

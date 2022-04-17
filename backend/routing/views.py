@@ -1,3 +1,4 @@
+from os import stat
 from django.shortcuts import render
 from rest_framework.response import Response
 
@@ -30,7 +31,7 @@ class BranchAPI(APIView):
         paginator = Paginator(all_data, pageSize)
         dataResponse = int(pageSize) > 0 and paginator.page(page) or all_data
         serializer = BranchSerializer(dataResponse, many=True)
-        return Response({'data': serializer.data, 'success': True, 'page': page, 'pageSize': pageSize})
+        return Response({'data': serializer.data, 'success': True, 'page': page, 'pageSize': pageSize}, status = status.HTTP_200_OK)
 
     def post(self, request, format=None):
         serializer = BranchSerializer(data=request.data)
@@ -45,14 +46,14 @@ class BranchAPI(APIView):
         serializer = BranchSerializer(stu, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({'data': {'msg': 'Data Updated'}, 'success': True})
-        return Response(serializer.errors)
+            return Response({'data': {'msg': 'Data Updated'}, 'success': True}, status = status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
         id = pk
         stu = Branch.objects.get(pk=id)
         stu.delete()
-        return Response({'msg': 'Data Deleted'})
+        return Response({'msg': 'Data Deleted'}, status = status.HTTP_200_OK)
 
 
 class BranchEdgeAPI(APIView):
@@ -61,11 +62,9 @@ class BranchEdgeAPI(APIView):
         if id is not None:
             stu = BranchEdge.objects.get(id=id)
             serializer = BranchEdgeSerializer(stu)
-            return Response(serializer.data)
+            return Response(serializer.data,status=status.HTTP_200_OK)
 
         all_data = BranchEdge.objects.all()
-        graph = Graph(all_data, 1, 3)
-        print(graph.shortest_path())
         pageSize = request.query_params.get("pageSize")
         page = request.query_params.get('page')
 
@@ -78,7 +77,7 @@ class BranchEdgeAPI(APIView):
         paginator = Paginator(all_data, pageSize)
         dataResponse = int(pageSize) > 0 and paginator.page(page) or all_data
         serializer = BranchEdgeSerializer(dataResponse, many=True)
-        return Response({'data': serializer.data, 'success': True, 'page': page, 'pageSize': pageSize})
+        return Response({'data': serializer.data, 'success': True, 'page': page, 'pageSize': pageSize}, status = status.HTTP_200_OK)
 
     def post(self, request, format=None):
         serializer = BranchEdgeSerializer(data=request.data)
@@ -93,11 +92,11 @@ class BranchEdgeAPI(APIView):
         serializer = BranchEdgeSerializer(stu, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({'data': {'msg': 'Data Updated'}, 'success': True})
-        return Response(serializer.errors)
+            return Response({'data': {'msg': 'Data Updated'}, 'success': True}, status=status.HTTP_202_ACCEPTED),
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
         id = pk
         stu = BranchEdge.objects.get(pk=id)
         stu.delete()
-        return Response({'msg': 'Data Deleted'})
+        return Response({'msg': 'Data Deleted'}, status=status.HTTP_200_OK)
