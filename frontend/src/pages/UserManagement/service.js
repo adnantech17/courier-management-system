@@ -18,3 +18,7 @@ export async function updateUser(data) {
     data,
   });
 }
+
+export async function deleteUser(id) {
+  return request.delete(`${ENDPOINTS.USER}${id}/`);
+}

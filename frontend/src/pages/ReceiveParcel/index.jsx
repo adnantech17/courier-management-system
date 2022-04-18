@@ -39,7 +39,7 @@ const EntryForm = () => {
       if (!resp.success) throw resp;
       message.success(`Receive successful`);
     } catch (error) {
-      if (error.message) message.error(error.message);
+      if (error.message) message.error('Parcel receive failed due to invalid data entry.');
     }
   };
 

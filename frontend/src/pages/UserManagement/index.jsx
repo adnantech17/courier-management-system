@@ -1,18 +1,33 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Drawer } from 'antd';
+import { Button, Drawer, Popconfirm } from 'antd';
 import { useState, useRef } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import ProDescriptions from '@ant-design/pro-descriptions';
-import { getUsers } from './service';
+import { deleteUser, getUsers } from './service';
 import Form from './components/Form';
+import { useModel } from 'umi';
 
 const TableList = () => {
   const [showForm, setShowForm] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
 
+  const { initialState } = useModel('@@initialState');
+  const { currentUser } = initialState || {};
+
   const actionRef = useRef();
   const [currentRow, setCurrentRow] = useState();
+
+  const handleDelete = async (id) => {
+    try {
+      const resp = await deleteUser(id);
+      if (!resp.success) throw resp;
+      message.success(`Deleted successful`);
+    } catch (error) {
+      console.log(error);
+      if (error.message) message.error('Invalid Request');
+    }
+  };
 
   const columns = [
     {
@@ -49,7 +64,8 @@ const TableList = () => {
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => [
-        <a
+        <Button
+          type="primary"
           key="config"
           onClick={() => {
             setCurrentRow(record);
@@ -57,7 +73,22 @@ const TableList = () => {
           }}
         >
           Edit
-        </a>,
+        </Button>,
+        currentUser?.role === 'admin' && (
+          <Popconfirm
+            key="delete"
+            placement="topLeft"
+            title={'Are you sure you wanna delete this user?'}
+            onConfirm={() => {
+              handleDelete(record.id);
+              handleSuccess();
+            }}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="danger">Fire</Button>
+          </Popconfirm>
+        ),
       ],
     },
   ];

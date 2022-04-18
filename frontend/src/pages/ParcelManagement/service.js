@@ -18,3 +18,7 @@ export async function updateParcel(data) {
     data,
   });
 }
+
+export async function deleteParcel(id) {
+  return request.delete(`${ENDPOINTS.PARCEL}${id}/`);
+}

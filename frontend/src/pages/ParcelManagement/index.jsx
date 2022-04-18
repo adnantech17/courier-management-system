@@ -1,10 +1,10 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Drawer, message, Modal } from 'antd';
+import { Button, Drawer, message, Modal, Popconfirm } from 'antd';
 import { useState, useRef } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import ProDescriptions from '@ant-design/pro-descriptions';
-import { getParcels, updateParcel } from './service';
+import { deleteParcel, getParcels, updateParcel } from './service';
 import Form from './components/Form';
 import { useModel } from 'umi';
 
@@ -49,6 +49,17 @@ const TableList = () => {
       message.success(`Receive successful`);
     } catch (error) {
       if (error.message) message.error(error.message);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const resp = await deleteParcel(id);
+      if (!resp.success) throw resp;
+      message.success(`Deleted successful`);
+    } catch (error) {
+      console.log(error);
+      if (error.message) message.error('Invalid Request');
     }
   };
 
@@ -106,7 +117,7 @@ const TableList = () => {
               type="primary"
               onClick={() => {
                 handleUpdate(record.id, true);
-                handleSuccess()
+                handleSuccess();
               }}
             >
               Success
@@ -116,8 +127,8 @@ const TableList = () => {
               type="danger"
               style={{ marginLeft: 16 }}
               onClick={() => {
-                handleUpdate(record.id, false);                
-                handleSuccess()
+                handleUpdate(record.id, false);
+                handleSuccess();
               }}
             >
               Failed
@@ -127,6 +138,26 @@ const TableList = () => {
           '-'
         ),
     },
+    {
+      title: 'Actions',
+      dataIndex: 'option',
+      valueType: 'option',
+      render: (_, record) => [
+        <Popconfirm
+          key="delete"
+          placement="topLeft"
+          title={'Are you sure you wanna delete this parcel?'}
+          onConfirm={() => {
+            handleDelete(record.id);
+            handleSuccess();
+          }}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button type="danger">Delete</Button>
+        </Popconfirm>,
+      ],
+    },
   ];
 
   const handleSuccess = async () => {
@@ -134,7 +165,11 @@ const TableList = () => {
   };
 
   const drawerColumns = columns.filter(
-    (c) => ((currentUser?.role == 'delivery_man' && c.title == 'Delivery') || (c.title != 'Delivery'))
+    (c) =>
+      (currentUser?.role == 'delivery_man' && c.title == 'Delivery') ||
+      c.title != 'Delivery' ||
+      (currentUser?.role == 'admin' && c.title == 'Action') ||
+      c.title != 'Action',
   );
 
   return (

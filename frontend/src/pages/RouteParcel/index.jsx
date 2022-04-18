@@ -37,7 +37,7 @@ const EntryForm = () => {
       if (!resp.success) throw resp;
       message.success(`Route successful`);
     } catch (error) {
-      if (error.message) message.error(error.message);
+      if (error.message) message.error('Parcel routing failed due to invalid data entry.');
     }
   };
 
