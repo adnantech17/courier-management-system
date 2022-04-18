@@ -35,7 +35,7 @@ const TableList = () => {
       title: 'Processing Time',
       search: false,
       dataIndex: 'estimated_processing_time',
-      render: (data, _) => <p>{data} hours</p>,
+      render: (data, _) => <p>{data} days</p>,
     },
     {
       title: 'Cost',

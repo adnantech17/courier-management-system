@@ -34,12 +34,12 @@ const TableList = () => {
     actionRef.current?.reload();
   };
 
-  const handleUpdate = async (id, delivered) => {
+  const handleUpdate = async (id, delivered, record) => {
     try {
       const data = { id: id };
       if (delivered) {
         data['current_tracking_status'] = 'delivered';
-        data['parcel_on_return'] = false;
+        data['parcel_on_return'] = record.parcel_on_return;
       } else {
         data['current_tracking_status'] = 'failed';
         data['parcel_on_return'] = true;
@@ -58,7 +58,6 @@ const TableList = () => {
       if (!resp.success) throw resp;
       message.success(`Deleted successful`);
     } catch (error) {
-      console.log(error);
       if (error.message) message.error('Invalid Request');
     }
   };
@@ -99,6 +98,12 @@ const TableList = () => {
       render: (data, _) => <p>{data.name}</p>,
     },
     {
+      title: 'Current Branch',
+      search: false,
+      dataIndex: 'current_branch_object',
+      render: (data, _) => <p>{data.name}</p>,
+    },
+    {
       title: 'Status',
       search: false,
       dataIndex: 'current_tracking_status',
@@ -116,7 +121,7 @@ const TableList = () => {
               key="success"
               type="primary"
               onClick={() => {
-                handleUpdate(record.id, true);
+                handleUpdate(record.id, true, record);
                 handleSuccess();
               }}
             >
@@ -127,7 +132,7 @@ const TableList = () => {
               type="danger"
               style={{ marginLeft: 16 }}
               onClick={() => {
-                handleUpdate(record.id, false);
+                handleUpdate(record.id, false, record);
                 handleSuccess();
               }}
             >
@@ -166,10 +171,8 @@ const TableList = () => {
 
   const drawerColumns = columns.filter(
     (c) =>
-      (currentUser?.role == 'delivery_man' && c.title == 'Delivery') ||
-      c.title != 'Delivery' ||
-      (currentUser?.role == 'admin' && c.title == 'Action') ||
-      c.title != 'Action',
+      ((currentUser?.role == 'delivery_man' && c.title == 'Delivery') || c.title != 'Delivery') &&
+      ((currentUser?.role == 'admin' && c.title == 'Actions') || c.title != 'Actions'),
   );
 
   return (
@@ -193,15 +196,17 @@ const TableList = () => {
           searchText: 'Search',
         }}
         toolBarRender={() => [
-          <Button
-            type="primary"
-            key="primary"
-            onClick={() => {
-              setShowForm(true);
-            }}
-          >
-            <PlusOutlined /> New
-          </Button>,
+          currentUser.role !== 'delivery_man' && (
+            <Button
+              type="primary"
+              key="primary"
+              onClick={() => {
+                setShowForm(true);
+              }}
+            >
+              <PlusOutlined /> New
+            </Button>
+          ),
         ]}
         request={getParcels}
         columns={drawerColumns}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ProForm, { ProFormDigit, ProFormMoney, ProFormSelect } from '@ant-design/pro-form';
-import { message, Modal } from 'antd';
+import { Col, message, Modal, Row } from 'antd';
 import { branchLinkCreate, getBranchesForDropdown } from '../service';
 
 const Form = (props) => {
@@ -43,56 +43,67 @@ const Form = (props) => {
         }}
         initialValues={values}
       >
-        <ProForm.Group size={'middle'}>
-          <ProFormSelect
-            name="from_branch"
-            label="From"
-            rules={[
-              {
-                required: true,
-                message: 'You Must select an option',
-              },
-            ]}
-            placeholder="Select option"
-            request={getBranchesForDropdown}
-          />
+        <Row gutter={16}>
+          <Col span={12}>
+            <ProFormSelect
+              name="from_branch"
+              label="From"
+              rules={[
+                {
+                  required: true,
+                  message: 'You Must select an option',
+                },
+              ]}
+              placeholder="Select option"
+              request={getBranchesForDropdown}
+            />
+          </Col>
 
-          <ProFormSelect
-            name="to_branch"
-            label="To"
-            rules={[
-              {
-                required: true,
-                message: 'You Must select an option',
-              },
-            ]}
-            placeholder="Select option"
-            request={getBranchesForDropdown}
-          />
+          <Col span={12}>
+            <ProFormSelect
+              name="to_branch"
+              label="To"
+              rules={[
+                {
+                  required: true,
+                  message: 'You Must select an option',
+                },
+              ]}
+              placeholder="Select option"
+              request={getBranchesForDropdown}
+            />
+          </Col>
+        </Row>
 
-          <ProFormDigit
-            rules={[
-              {
-                required: true,
-                message: 'Must add value.',
-              },
-            ]}
-            label="Shipping Time"
-            name="shipping_time"
-          />
+        <Row gutter={16}>
+          <Col span={12}>
+            <ProFormDigit
+              rules={[
+                {
+                  required: true,
+                  message: 'Must add value.',
+                },
+              ]}
+              initialValue={1}
+              label="Shipping Time (Days)"
+              name="shipping_time"
+            />
+          </Col>
 
-          <ProFormMoney
-            rules={[
-              {
-                required: true,
-                message: 'Must add value.',
-              },
-            ]}
-            customSymbol="৳"
-            label="Shipping Cost"
-            name="shipping_cost"
-          />
-        </ProForm.Group>
+          <Col span={12}>
+            <ProFormMoney
+              rules={[
+                {
+                  required: true,
+                  message: 'Must add value.',
+                },
+              ]}
+              customSymbol="৳"
+              label="Shipping Cost"
+              name="shipping_cost"
+            />
+          </Col>
+        </Row>
       </ProForm>
     </Modal>
   );

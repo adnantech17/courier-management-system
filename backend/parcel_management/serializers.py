@@ -33,6 +33,7 @@ class ParcelSerializer(serializers.ModelSerializer):
 
     source_branch = serializers.SerializerMethodField(read_only=True)
     destination_branch = serializers.SerializerMethodField(read_only=True)
+    current_branch_object = serializers.SerializerMethodField(read_only=True)
 
     def create(self, validated_data):
         sender_data = validated_data.pop('sender')
@@ -51,7 +52,6 @@ class ParcelSerializer(serializers.ModelSerializer):
         return parcel
 
     def update(self, instance, validated_data):
-        print(instance)
         instance.current_tracking_status = validated_data.get(
             'current_tracking_status', instance.current_tracking_status)
         instance.current_branch = validated_data.get(
@@ -78,6 +78,9 @@ class ParcelSerializer(serializers.ModelSerializer):
 
     def get_destination_branch(self, obj):
         return BranchSerializer(obj.destination_address.branch).data
+
+    def get_current_branch_object(self, obj):
+        return BranchSerializer(obj.current_branch).data
 
 
 class TrackSerializer(serializers.ModelSerializer):

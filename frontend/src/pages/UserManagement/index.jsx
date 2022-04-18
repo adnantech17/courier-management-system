@@ -60,6 +60,12 @@ const TableList = () => {
       ),
     },
     {
+      title: 'Branch',
+      search: false,
+      dataIndex: 'branch',
+      render: (data, record) => (record.role !== 'admin' ? <p>{data.name}</p> : '-'),
+    },
+    {
       title: 'Actions',
       dataIndex: 'option',
       valueType: 'option',

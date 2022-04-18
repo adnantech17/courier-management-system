@@ -11,8 +11,11 @@ import ProForm, {
 import { Col, message, Modal, Row } from 'antd';
 import { addParcel, updateParcel } from '../service';
 import { getBranchesForDropdown } from '@/pages/BranchManagement/service';
+import { useModel } from 'umi';
 
 const Form = (props) => {
+  const { initialState } = useModel('@@initialState');
+  const { currentUser } = initialState || {};
   const { modalVisible, onSuccess, onCancel, name, title, values, setData } = props;
   const [form] = ProForm.useForm();
 
@@ -111,6 +114,8 @@ const Form = (props) => {
               ]}
               placeholder="Select option"
               request={getBranchesForDropdown}
+              disabled={currentUser.role === 'office_staff'}
+              initialValue={{ value: currentUser.branch.id, label: currentUser.branch.name }}
             />
           </Col>
         </Row>

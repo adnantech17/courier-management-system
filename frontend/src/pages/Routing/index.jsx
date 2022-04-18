@@ -42,7 +42,7 @@ const TableList = () => {
       title: 'Shipping Time',
       search: false,
       dataIndex: 'shipping_time',
-      render: (data, _) => <p>{data} hours</p>,
+      render: (data, _) => <p>{data} days</p>,
     },
     {
       title: 'Shipping Cost',

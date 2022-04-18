@@ -71,7 +71,8 @@ const Form = (props) => {
                 message: 'Must add value.',
               },
             ]}
-            label="Estimated Processing Time"
+            initialValue={0}
+            label="Estimated Processing Time (Days)"
             name="estimated_processing_time"
           />
           <ProFormMoney
@@ -82,6 +83,7 @@ const Form = (props) => {
               },
             ]}
             customSymbol="৳"
+            min={0}
             label="Estimated Processing Cost"
             name="estimated_processing_cost"
           />

@@ -61,6 +61,24 @@ const EntryForm = () => {
       dataIndex: 'receiver',
       render: (data, _) => <p>{data.name}</p>,
     },
+    {
+      title: 'Source Branch',
+      search: false,
+      dataIndex: 'source_branch',
+      render: (data, _) => <p>{data.name}</p>,
+    },
+    {
+      title: 'Destination Branch',
+      search: false,
+      dataIndex: 'destination_branch',
+      render: (data, _) => <p>{data.name}</p>,
+    },
+    {
+      title: 'Current Branch',
+      search: false,
+      dataIndex: 'current_branch_object',
+      render: (data, _) => <p>{data.name}</p>,
+    },
   ];
 
   return (

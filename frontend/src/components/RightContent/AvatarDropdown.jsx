@@ -72,12 +72,19 @@ const AvatarDropdown = ({ menu }) => {
     </Menu>
   );
   return (
-    <HeaderDropdown overlay={menuHeaderDropdown}>
-      <span className={`${styles.action} ${styles.account}`}>
-        <Avatar size="small" className={styles.avatar} src={currentUser.avatar} alt="avatar" />
-        <span className={`${styles.name} anticon`}>{currentUser.name}</span>
-      </span>
-    </HeaderDropdown>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      {currentUser.role !== 'admin' && (
+        <span className={`anticon`} style={{ marginRight: 10 }}>
+          {currentUser.branch.name}
+        </span>
+      )}
+      <HeaderDropdown overlay={menuHeaderDropdown}>
+        <span className={`${styles.action} ${styles.account}`}>
+          <Avatar size="small" className={styles.avatar} src={currentUser.avatar} alt="avatar" />
+          <span className={`${styles.name} anticon`}>{currentUser.name}</span>
+        </span>
+      </HeaderDropdown>
+    </div>
   );
 };
 

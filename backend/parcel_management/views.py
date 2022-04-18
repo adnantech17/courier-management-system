@@ -199,22 +199,24 @@ class ParcelAPI(APIView):
             else:
                 return Response({'data': {'msg': "You don't have the permission"}, 'success': False})
 
+        print(new_data)
+
         serializer = ParcelSerializer(data, data=new_data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            if request.data.get('current_tracking_status') == 'delivered':
+                print(data.parcel_on_return)
+                serializer = PathHistorySerializer(
+                    data={'parcel': id, 'branch': request.user.assigned_branch.id, 'status':  "Returned from" if data.parcel_on_return else "Delivered from"})
+                if serializer.is_valid():
+                    serializer.save()
+
+            elif request.data.get('parcel_on_return') == True:
+                serializer = PathHistorySerializer(
+                    data={'parcel': id, 'branch': request.user.assigned_branch.id, 'status': "Failed Delivery at"})
+                if serializer.is_valid():
+                    serializer.save()
             return Response({'data': {'msg': 'Partial Data Updated'}, 'success': True})
-
-        if request.data.get('current_tracking_status') == 'delivered':
-            serializer = PathHistorySerializer(
-                data={'parcel': id, 'branch': request.data.assigned_branch.id, 'status': "Delivered to"})
-            if serializer.is_valid():
-                serializer.save()
-
-        elif request.data.get('parcel_on_return') == True:
-            serializer = PathHistorySerializer(
-                data={'parcel': id, 'branch': request.data.assigned_branch.id, 'status': "Failed Delivery at"})
-            if serializer.is_valid():
-                serializer.save()
 
         return Response({'data': serializer.errors, 'success': False})
 
