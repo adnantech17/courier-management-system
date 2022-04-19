@@ -13,13 +13,19 @@ const Form = (props) => {
     try {
       const validatedData = await form.validateFields();
       const resp = await branchLinkCreate({ ...validatedData, id: values?.id });
-      if (!resp.success) throw resp;
+      const resp2 = await branchLinkCreate({
+        ...validatedData,
+        id: values?.id,
+        from_branch: validatedData.from_branch,
+        to_branch: validatedData.to_branch,
+      });
+      if (!resp.success || !resp2.success) throw resp;
       onSuccess();
       message.success(`Branch Link added successfully`);
       form.resetFields();
       onCancel();
     } catch (error) {
-      if (error.message) message.error(error.message);
+      if (error.message) message.error('Invalid data entry!');
     }
   };
 
